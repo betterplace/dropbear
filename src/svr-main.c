@@ -1,19 +1,19 @@
 /*
  * Dropbear - a SSH2 server
- * 
+ *
  * Copyright (c) 2002-2006 Matt Johnston
  * All rights reserved.
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -105,7 +105,9 @@ static void main_inetd() {
 	if (svr_opts.reexec_childpipe < 0) {
 		/* In case our inetd was lax in logging source addresses */
 		get_socket_address(0, NULL, NULL, &host, &port, 0);
+#if DEBUG_TRACE
 			dropbear_log(LOG_INFO, "Child connection from %s:%s", host, port);
+#endif
 		m_free(host);
 		m_free(port);
 
@@ -261,11 +263,11 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 			struct sockaddr_storage remoteaddr;
 			socklen_t remoteaddrlen;
 
-			if (!FD_ISSET(listensocks[i], &fds)) 
+			if (!FD_ISSET(listensocks[i], &fds))
 				continue;
 
 			remoteaddrlen = sizeof(remoteaddr);
-			childsock = accept(listensocks[i], 
+			childsock = accept(listensocks[i],
 					(struct sockaddr*)&remoteaddr, &remoteaddrlen);
 
 			if (childsock < 0) {
@@ -326,7 +328,9 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 
 				/* child */
 				getaddrstring(&remoteaddr, NULL, &remote_port, 0);
+#if DEBUG_TRACE
 				dropbear_log(LOG_INFO, "Child connection from %s:%s", remote_host, remote_port);
+#endif
 				m_free(remote_host);
 				m_free(remote_port);
 
@@ -446,7 +450,7 @@ static void commonsetup() {
 #endif
 
 	/* set up cleanup handler */
-	if (signal(SIGINT, sigintterm_handler) == SIG_ERR || 
+	if (signal(SIGINT, sigintterm_handler) == SIG_ERR ||
 #ifndef DEBUG_VALGRIND
 		signal(SIGTERM, sigintterm_handler) == SIG_ERR ||
 #endif
@@ -486,12 +490,12 @@ static size_t listensockets(int *socks, size_t sockcount, int *maxfd) {
 
 		TRACE(("listening on '%s:%s'", svr_opts.addresses[i], svr_opts.ports[i]))
 
-		nsock = dropbear_listen(svr_opts.addresses[i], svr_opts.ports[i], &socks[sockpos], 
+		nsock = dropbear_listen(svr_opts.addresses[i], svr_opts.ports[i], &socks[sockpos],
 				sockcount - sockpos,
 				&errstring, maxfd);
 
 		if (nsock < 0) {
-			dropbear_log(LOG_WARNING, "Failed listening on '%s': %s", 
+			dropbear_log(LOG_WARNING, "Failed listening on '%s': %s",
 							svr_opts.ports[i], errstring);
 			m_free(errstring);
 			continue;
